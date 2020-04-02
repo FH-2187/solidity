@@ -73,6 +73,10 @@ public:
 	bool isLocalVariable(VariableDeclaration const& _varDecl) const { return m_localVariables.count(&_varDecl); }
 	IRVariable const& localVariable(VariableDeclaration const& _varDecl);
 
+	IRVariable const& addImmutableVariable(VariableDeclaration const& _varDecl);
+	bool isImmutableVariable(VariableDeclaration const& _varDecl) const { return m_immutableVariables.count(&_varDecl); }
+	IRVariable const& immutableVariable(VariableDeclaration const& _varDecl);
+
 	void addStateVariable(VariableDeclaration const& _varDecl, u256 _storageOffset, unsigned _byteOffset);
 	bool isStateVariable(VariableDeclaration const& _varDecl) const { return m_stateVariables.count(&_varDecl); }
 	std::pair<u256, unsigned> storageLocationOfVariable(VariableDeclaration const& _varDecl) const
@@ -105,6 +109,7 @@ private:
 	OptimiserSettings m_optimiserSettings;
 	ContractDefinition const* m_mostDerivedContract = nullptr;
 	std::map<VariableDeclaration const*, IRVariable> m_localVariables;
+	std::map<VariableDeclaration const*, IRVariable> m_immutableVariables;
 	/// Storage offsets of state variables
 	std::map<VariableDeclaration const*, std::pair<u256, unsigned>> m_stateVariables;
 	MultiUseYulFunctionCollector m_functions;

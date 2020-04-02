@@ -56,6 +56,24 @@ IRVariable const& IRGenerationContext::localVariable(VariableDeclaration const& 
 	return m_localVariables.at(&_varDecl);
 }
 
+IRVariable const& IRGenerationContext::addImmutableVariable(VariableDeclaration const& _varDecl)
+{
+	auto const& [it, didInsert] = m_immutableVariables.emplace(
+		std::make_pair(&_varDecl, IRVariable{_varDecl})
+	);
+	solAssert(didInsert, "Immutable variable added multiple times.");
+	return it->second;
+}
+
+IRVariable const& IRGenerationContext::immutableVariable(VariableDeclaration const& _varDecl)
+{
+	solAssert(
+		m_immutableVariables.count(&_varDecl),
+		"Unknown immutable variable: " + _varDecl.name()
+	);
+	return m_immutableVariables.at(&_varDecl);
+}
+
 void IRGenerationContext::addStateVariable(
 	VariableDeclaration const& _declaration,
 	u256 _storageOffset,

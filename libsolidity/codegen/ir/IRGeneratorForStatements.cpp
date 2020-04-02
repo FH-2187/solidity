@@ -1191,8 +1191,12 @@ void IRGeneratorForStatements::endVisit(Identifier const& _identifier)
 		// If the value is visited twice, `defineExpression` is called twice on
 		// the same expression.
 		solUnimplementedAssert(!varDecl->isConstant(), "");
-		solUnimplementedAssert(!varDecl->immutable(), "");
-		if (m_context.isLocalVariable(*varDecl))
+		if (m_context.isImmutableVariable(*varDecl))
+			setLValue(_identifier, IRLValue{
+				*varDecl->annotation().type,
+				IRLValue::Immutable{m_context.immutableVariable(*varDecl)}
+			});
+		else if (m_context.isLocalVariable(*varDecl))
 			setLValue(_identifier, IRLValue{
 				*varDecl->annotation().type,
 				IRLValue::Stack{m_context.localVariable(*varDecl)}
@@ -1622,6 +1626,12 @@ void IRGeneratorForStatements::writeToLValue(IRLValue const& _lvalue, IRVariable
 				}
 			},
 			[&](IRLValue::Stack const& _stack) { assign(_stack.variable, _value); },
+			[&](IRLValue::Immutable const& _immutable)
+			{
+				// TODO convert type of _value!
+				for (auto const& identifier: _immutable.identifiers)
+					m_code << "setImmutable(\"" << identifier << "\", _
+			},
 			[&](IRLValue::Tuple const& _tuple) {
 				auto components = std::move(_tuple.components);
 				for (size_t i = 0; i < components.size(); i++)
@@ -1676,6 +1686,9 @@ IRVariable IRGeneratorForStatements::readFromLValue(IRLValue const& _lvalue)
 		},
 		[&](IRLValue::Stack const& _stack) {
 			define(result, _stack.variable);
+		},
+		[&](IRLValue::Immutable const& _immutable) {
+			define(result, _immutable.variable);
 		},
 		[&](IRLValue::Tuple const&) {
 			solAssert(false, "Attempted to read from tuple lvalue.");
