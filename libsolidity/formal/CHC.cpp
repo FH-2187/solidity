@@ -29,8 +29,6 @@
 
 #include <libsolutil/Algorithms.h>
 
-#include <queue>
-
 using namespace std;
 using namespace solidity;
 using namespace solidity::langutil;
@@ -688,14 +686,7 @@ vector<VariableDeclaration const*> CHC::stateVariablesIncludingInheritedAndPriva
 void CHC::createArrayLengths(Type const& _type)
 {
 	set<Type const*> types;
-	queue<Type const*> toVisit;
-	set<Type const*> visited;
-	toVisit.push(&_type);
-	while (!toVisit.empty())
-	{
-		auto const* type = toVisit.front();
-		toVisit.pop();
-		visited.insert(type);
+	solidity::util::BreadthFirstSearch<Type const*>{{&_type}}.run([&](auto const* type, auto&& _addChild) {
 		vector<Type const*> toVisitInner;
 		if (auto arrayType = dynamic_cast<ArrayType const*>(type))
 		{
@@ -711,9 +702,8 @@ void CHC::createArrayLengths(Type const& _type)
 			toVisitInner += structType->memoryMemberTypes();
 
 		for (auto const* innerType: toVisitInner)
-			if (!visited.count(innerType))
-				toVisit.push(innerType);
-	}
+			_addChild(innerType);
+	});
 
 	for (auto const* arrayType: types)
 	{
