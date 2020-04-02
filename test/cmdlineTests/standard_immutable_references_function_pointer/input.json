@@ -1,0 +1,18 @@
+{
+ "language": "Solidity",
+ "sources": {
+  "a.sol": {
+   "content": "contract A { function g() external {} function() external immutable x = this.g; function f() public { x(); } }"
+  }
+ },
+ "settings": {
+  "evmVersion": "petersburg",
+  "outputSelection": {
+   "*": {
+    "A": [
+     "evm.deployedBytecode.immutableReferences"
+    ]
+   }
+  }
+ }
+}
