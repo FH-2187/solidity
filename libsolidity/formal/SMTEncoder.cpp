@@ -868,7 +868,10 @@ bool SMTEncoder::visit(MemberAccess const& _memberAccess)
 	{
 		_memberAccess.expression().accept(*this);
 		if (_memberAccess.memberName() == "length")
+		{
+			m_uninterpretedTerms.insert(&_memberAccess);
 			arrayLength(_memberAccess);
+		}
 		else
 		{
 			auto const& name = _memberAccess.memberName();
